@@ -3,7 +3,7 @@
 Applied Computer Science (B.Sc.) · Dual Student · AI & Software Engineering  
 Building reproducible data pipelines, modular AI systems, and robust engineering tools.
 
-[GitHub](https://github.com/katharinaheller) · [Email](mailto:katharinaviktoriaheller@gmail.com)
+[Email](mailto:katharinaviktoriaheller@gmail.com)
 
 ---
 
