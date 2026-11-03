@@ -1,0 +1,91 @@
+name: DIVERSA | Repository Intelligence
+
+on:
+  schedule:
+    - cron: '45 0 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/repository-intelligence.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: diversa-profile-assets
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out profile repository
+        uses: actions/checkout@v4
+
+      - name: Create target directories
+        shell: bash
+        run: mkdir -p assets/profile-cards assets/repository-cards
+
+      - name: Render portfolio, repositories, and language intelligence
+        uses: seijikohara/profile-cards-action@v1.17.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.repository_owner }}
+          cards: portfolio,repositories,languages
+          output-dir: assets/profile-cards
+          themes: light,dark
+          palette: blue
+          commit: false
+
+      - name: Render Historical Drift card (dark)
+        uses: stats-organization/github-readme-stats-action@v2.1.0
+        continue-on-error: true
+        with:
+          card: pin
+          options: username=divessa&repo=Historical_Drift_Analyzer&theme=dark&hide_border=true
+          path: assets/repository-cards/historical-drift.dark.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: true
+
+      - name: Render Historical Drift card (light)
+        uses: stats-organization/github-readme-stats-action@v2.1.0
+        continue-on-error: true
+        with:
+          card: pin
+          options: username=divessa&repo=Historical_Drift_Analyzer&theme=default&hide_border=true
+          path: assets/repository-cards/historical-drift.light.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: true
+
+      - name: Render BibCleaner card (dark)
+        uses: stats-organization/github-readme-stats-action@v2.1.0
+        continue-on-error: true
+        with:
+          card: pin
+          options: username=divessa&repo=bibcleaner-pro&theme=dark&hide_border=true
+          path: assets/repository-cards/bibcleaner.dark.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: true
+
+      - name: Render BibCleaner card (light)
+        uses: stats-organization/github-readme-stats-action@v2.1.0
+        continue-on-error: true
+        with:
+          card: pin
+          options: username=divessa&repo=bibcleaner-pro&theme=default&hide_border=true
+          path: assets/repository-cards/bibcleaner.light.svg
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_error: true
+
+      - name: Commit only changed generated cards
+        shell: bash
+        run: |
+          git add -A assets/profile-cards assets/repository-cards
+          if git diff --cached --quiet; then
+            echo 'Repository intelligence unchanged.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(profile): refresh repository intelligence [skip ci]'
+          git push

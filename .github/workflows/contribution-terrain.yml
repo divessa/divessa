@@ -1,0 +1,42 @@
+name: DIVERSA | Contribution Terrain
+
+on:
+  schedule:
+    - cron: '10 1 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/contribution-terrain.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: diversa-profile-assets
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out profile repository
+        uses: actions/checkout@v4
+
+      - name: Generate existing 3D contribution themes
+        uses: yoshi389111/github-profile-3d-contrib@v0.9.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.repository_owner }}
+
+      - name: Commit only the two featured terrain assets
+        shell: bash
+        run: |
+          git add profile-3d-contrib/profile-night-view.svg profile-3d-contrib/profile-green-animate.svg
+          if git diff --cached --quiet; then
+            echo 'Contribution terrain unchanged.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore(profile): refresh contribution terrain [skip ci]'
+          git push
